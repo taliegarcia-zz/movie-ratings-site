@@ -56,6 +56,15 @@ def user_list():
     return render_template("user_list.html", users=users)
 
 
+@app.route("/users/<int:id>")
+def get_user_by_id(id):
+    """Display user info page by user_id
+    """
+    user = User.query.get(id)
+
+    return render_template("user.html", user=user)
+
+
 @app.route('/movies')
 def movie_list():
     """Show a list of the movies """
@@ -103,16 +112,6 @@ def score_movie(id):
     db.session.commit()
     
     return render_template("movie.html", movie_object=movie_object, user_id=user_id, score=ratings_object.score)
-
-
-@app.route("/users/<int:id>")
-def get_user_by_id(id):
-    """Display user info page by user_id
-    """
-    user = User.query.get(id)
-
-    return render_template("user.html", user=user)
-
 
 
 @app.route("/login")
