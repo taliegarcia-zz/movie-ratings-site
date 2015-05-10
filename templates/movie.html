@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block content %}
+
+    <h2>Title: {{ movie_object.title }} </h2>
+    
+        <li>
+          <a href="{{ movie_object.imdb_url }}">See details on IMDB</a>      
+        </li>
+        <li>
+          Released: {{ movie_object.released_at }}   
+        </li>
+
+        <!-- Enter movie rating? -->
+        {% if "logged_in_user_id" in session %}
+          Your user_id is: {{ user_id }}
+
+        {% endif %}
+        
+        <!-- "if <variable> is defined" can be used as an if statement in jinja2 - this will show score only if a score has been provided by user -->
+        {% if score is defined %}
+          <div class="current"> 
+            Your Rating: {{ score }} 
+          </div>
+        {% endif %}
+      
+      <form class="movie-rating-form" action='/movies/{{ movie_object.movie_id }}' method="POST">
+
+        <h2 class="form-heading">Rate this Movie</h2>
+
+        <div class="form-group">
+            <label class="score">Your score:</label>
+              <input type="radio" name="score" value="1">1
+              <input type="radio" name="score" value="2">2
+              <input type="radio" name="score" value="3">3
+              <input type="radio" name="score" value="4">4
+              <input type="radio" name="score" value="5">5
+
+        </div>
+         <button class="rate" type="submit">Submit</button>
+      </form>
+
+
+
+     
+      <ul>
+        <li>Ratings: 
+         
+              <table class="rating_list">
+              {% for rating in movie_object.ratings %}
+                <tr>
+
+                   <td>User <a href="/users/{{ rating.user_id }}">{{ rating.user_id }}</a> rated {{ rating.score }}</td>
+                </tr>
+          
+              {% endfor %}
+              </table>
+            
+        </li>
+        
+    </ul>
+
+{% endblock %}

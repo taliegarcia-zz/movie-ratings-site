@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+    <head>
+     
+      <title>Ratings</title>
+    
+    </head>
+
+    <body>
+      Ratings
+    
+        <!-- show if logged in or not -->
+        <div class="logstatus">
+            {% if "logged_in_user_id" in session %}
+                <li><a href="/users/{{ session["logged_in_user_id"] }}">My Page</a></li>
+                <li><a href="/logout">Log Out</a></li>
+            {% else %}
+                <li><a href="/login">Log In</a></li>
+            {% endif %}
+        </div>
+
+        <!-- Show flashed messages -->
+        <div class="flash">
+        {% with messages = get_flashed_messages() %}
+            {% for message in messages %}
+                <div class="alert alert-warning">{{ message }}</div>
+            {% endfor %}
+        {% endwith %}
+        </div>
+
+            
+        <hr>
+
+            {% block content %} put your content here {% endblock %}
+
+        <div class="home">
+            <a href="/">Home</a>
+        </div>
+    
+    </body>
+
+</html>
