@@ -7,8 +7,10 @@
     </head>
 
     <body>
-      Ratings
-    
+      Judgmental Eye
+        <div class="home">
+            <a href="/">Home</a>
+        </div>
         <!-- show if logged in or not -->
         <div class="logstatus">
             {% if "logged_in_user_id" in session %}
@@ -32,10 +34,6 @@
         <hr>
 
             {% block content %} put your content here {% endblock %}
-
-        <div class="home">
-            <a href="/">Home</a>
-        </div>
     
     </body>
 

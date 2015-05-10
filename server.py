@@ -74,19 +74,48 @@ def movie_list():
     return render_template("movie_list.html", movies_list = movies_list)
 
 
-
-@app.route("/movies/<int:id>") # GET request, goes to indiv. movie page
+#-#-#-#- Default GET of movie_id page -#-#-#-#
+@app.route("/movies/<int:id>", methods=["GET"]) 
 def get_movie_id(id):
     """Display movie page by movie_id.
     Also, based on logged in user, display their rating for that movie, if defined.
     """
 
-    movie_object = Movie.query.get(id) 
+    movie = Movie.query.get(id) 
     user_id = session.get("logged_in_user_id")
 
-    return render_template("movie.html", movie_object=movie_object, user_id=user_id)
+    if user_id: 
+        # returns the smart object, rating, associated with user if they have already scored the movie 
+        user_rating = Rating.query.filter_by(movie_id = movie.movie_id, 
+                                            user_id = user_id).first()
+    else:
+        user_rating = None
+        
+    rating_scores = [r.score for r in movie.ratings]
+    avg_rating = float(sum(rating_scores)) / len(rating_scores)
+
+    prediction = None
+    # initializing prediction variable
 
 
+    # Prediction code: only predict if the user hasn't rated it.
+
+    if (not user_rating) and user_id: 
+        # if user_rating is None AND they are logged in
+        user = User.query.get(user_id)
+        # get the user object by user_id
+
+        if user:
+            # if the user is found in our db, call the predict_rating method on it
+            prediction = user.predict_rating(movie)
+    
+    return render_template("movie.html", 
+                        movie_object=movie, 
+                        user_rating=user_rating, 
+                        average=avg_rating,
+                        prediction=prediction)
+
+#-#-#-#- POST of movie_id page when user submits a new score -#-#-#-#
 @app.route("/movies/<int:id>", methods=["POST"])
 def score_movie(id):
     """When user submits a new score on the movie page,
@@ -94,24 +123,47 @@ def score_movie(id):
     or update the score if it already exists.
     """
 
-    movie_object = Movie.query.get(id)
-    user_id = session["logged_in_user_id"]
+    movie = Movie.query.get(id)
+    user_id = session.get("logged_in_user_id")
     score = request.form.get("score")
 
-    
-    ratings_object = Rating.query.filter_by(movie_id = movie_object.movie_id, user_id = user_id).first()
-    # returns a smart object if that user has already scored the movie 
+    if user_id:
+        user_rating = Rating.query.filter_by(movie_id = movie.movie_id, 
+                                            user_id = user_id).first()
 
-    if ratings_object:
-        ratings_object.score = score # if the score already exists, update it with this newly inputted score
+    if user_rating:
+        user_rating.score = score
+
     else:
-        ratings_object = Rating(movie_id=movie_object.movie_id, user_id=user_id, score=score)  
-        db.session.add(ratings_object)
-        # if no preexisting score is found, and so no smart object, insert a new entry in the ratings table
+        new_rating_to_insert = Rating(movie_id=movie_object.movie_id, user_id=user_id, score=score)  
+        db.session.add(new_rating_to_insert)
 
     db.session.commit()
+
+    rating_scores = [r.score for r in movie.ratings]
+    avg_rating = float(sum(rating_scores)) / len(rating_scores)
+
+    prediction = None
+    # initializing prediction variable
+
+    # Prediction code: only predict if the user hasn't rated it.
+
+    if (not user_rating) and user_id: 
+        # if user_rating is None AND they are logged in
+        user = User.query.get(user_id)
+        # get the user object by user_id
+
+        if user:
+            # if the user is found in our db, call the predict_rating method on it
+            prediction = user.predict_rating(movie)
+
+
     
-    return render_template("movie.html", movie_object=movie_object, user_id=user_id, score=ratings_object.score)
+    return render_template("movie.html", 
+                        movie_object=movie, 
+                        user_rating=user_rating, 
+                        average=avg_rating,
+                        prediction=prediction)
 
 
 @app.route("/login")
