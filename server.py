@@ -74,49 +74,7 @@ def movie_list():
     return render_template("movie_list.html", movies_list = movies_list)
 
 
-#-#-#-#- Default GET of movie_id page -#-#-#-#
-@app.route("/movies/<int:id>", methods=["GET"]) 
-def get_movie_id(id):
-    """Display movie page by movie_id.
-    Also, based on logged in user, display their rating for that movie, if defined.
-    """
-
-    movie = Movie.query.get(id) 
-    user_id = session.get("logged_in_user_id")
-
-    if user_id: 
-        # returns the smart object, rating, associated with user if they have already scored the movie 
-        user_rating = Rating.query.filter_by(movie_id = movie.movie_id, 
-                                            user_id = user_id).first()
-    else:
-        user_rating = None
-        
-    rating_scores = [r.score for r in movie.ratings]
-    avg_rating = float(sum(rating_scores)) / len(rating_scores)
-
-    prediction = None
-    # initializing prediction variable
-
-
-    # Prediction code: only predict if the user hasn't rated it.
-
-    if (not user_rating) and user_id: 
-        # if user_rating is None AND they are logged in
-        user = User.query.get(user_id)
-        # get the user object by user_id
-
-        if user:
-            # if the user is found in our db, call the predict_rating method on it
-            prediction = user.predict_rating(movie)
-    
-    return render_template("movie.html", 
-                        movie_object=movie, 
-                        user_rating=user_rating, 
-                        average=avg_rating,
-                        prediction=prediction)
-
-#-#-#-#- POST of movie_id page when user submits a new score -#-#-#-#
-@app.route("/movies/<int:id>", methods=["POST"])
+@app.route("/movies/<int:id>", methods=["GET", "POST"])
 def score_movie(id):
     """When user submits a new score on the movie page,
     handle the POST request, and insert the new score into ratings db, 
@@ -125,26 +83,20 @@ def score_movie(id):
 
     movie = Movie.query.get(id)
     user_id = session.get("logged_in_user_id")
-    score = request.form.get("score")
+    
 
+    # querying to see if user has rated this movie before
     if user_id:
         user_rating = Rating.query.filter_by(movie_id = movie.movie_id, 
                                             user_id = user_id).first()
-
-    if user_rating:
-        user_rating.score = score
-
     else:
-        new_rating_to_insert = Rating(movie_id=movie_object.movie_id, user_id=user_id, score=score)  
-        db.session.add(new_rating_to_insert)
-
-    db.session.commit()
+        user_rating = None
 
     rating_scores = [r.score for r in movie.ratings]
     avg_rating = float(sum(rating_scores)) / len(rating_scores)
 
-    prediction = None
-    # initializing prediction variable
+    prediction = None # initializing prediction variable
+
 
     # Prediction code: only predict if the user hasn't rated it.
 
@@ -158,6 +110,19 @@ def score_movie(id):
             prediction = user.predict_rating(movie)
 
 
+    # Insert New Score code: only run if user POST's a new score
+    # if a rating exists, we can replace it with the new_score by just changing the object attribute
+    if request.method == "POST":
+        new_score = request.form.get("score")
+    
+        if user_rating:
+            user_rating.score = new_score
+
+        # otherwise, we need to insert the score as a new rating instance
+        else:
+            new_rating_to_insert = Rating(movie_id=movie_object.movie_id, user_id=user_id, score=new_score)  
+            db.session.add(new_rating_to_insert)
+            db.session.commit()
     
     return render_template("movie.html", 
                         movie_object=movie, 

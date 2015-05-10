@@ -14,7 +14,6 @@
         
 
         {% if "logged_in_user_id" in session %}
-          <p>You are logged in.</p>
 
           {% if prediction %}
             <p>We predict you will rate this movie {{ prediction }}.</p>
@@ -52,7 +51,6 @@
                    <td>User <a href="/users/{{ rating.user_id }}">{{ rating.user_id }}</a></td>
                    <td> rated {{ rating.score }}</td>
                 </tr>
-          
               {% endfor %}
               </table>
             
