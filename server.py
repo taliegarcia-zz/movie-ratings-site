@@ -56,6 +56,8 @@ def user_list():
     return render_template("user_list.html", users=users)
 
 
+#FIX ME
+# does not update with user's new scores
 @app.route("/users/<int:id>")
 def get_user_by_id(id):
     """Display user info page by user_id
@@ -122,7 +124,8 @@ def score_movie(id):
         else:
             new_rating_to_insert = Rating(movie_id=movie_object.movie_id, user_id=user_id, score=new_score)  
             db.session.add(new_rating_to_insert)
-            db.session.commit()
+    
+    db.session.commit()
     
     return render_template("movie.html", 
                         movie_object=movie, 
