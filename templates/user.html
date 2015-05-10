@@ -14,7 +14,7 @@
          
               <table class="movie_list">
               
-                {% for rating in user.ratings %}
+                {% for rating in user.ratings|sort(attribute='movie.title') %}
                 <tr>
                   <td><a href="/movies/{{ rating.movie_id }}">{{ rating.movie.title }}</a></td>
                   <td>{{ rating.score }}</td>
