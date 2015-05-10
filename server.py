@@ -82,7 +82,7 @@ def get_movie_id(id):
     """
 
     movie_object = Movie.query.get(id) 
-    user_id = session.get("logged_in_user_id", None)
+    user_id = session.get("logged_in_user_id")
 
     return render_template("movie.html", movie_object=movie_object, user_id=user_id)
 
