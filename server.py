@@ -56,8 +56,6 @@ def user_list():
     return render_template("user_list.html", users=users)
 
 
-#FIX ME
-# does not update with user's new scores
 @app.route("/users/<int:id>")
 def get_user_by_id(id):
     """Display user info page by user_id
